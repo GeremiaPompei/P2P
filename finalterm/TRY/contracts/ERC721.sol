@@ -77,11 +77,11 @@ contract ERC721 is IERC721, IERC721Metadata {
     }
 
     function name() override virtual external view returns (string memory _name) {
-        return __name;
+        _name = __name;
     }
     
     function symbol() override virtual external view returns (string memory _symbol) {
-        return __symbol;
+        _symbol = __symbol;
     }
     
     function tokenURI(uint256 _tokenId) override virtual external view returns (string memory) {

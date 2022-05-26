@@ -15,27 +15,28 @@ contract TRY {
 
     uint8 private constant TOTAL_NUMBERS = 6;
     uint8 private constant POWERBALL_POSITION = 5;
-    uint8 private constant DURATION = 10;
     uint8[2][TOTAL_NUMBERS] private RANGES = [[1, 69], [1, 69], [1, 69], [1, 69], [1, 69], [1, 26]];
 
     address private __erc721Address;
-    bool private __roundActive;
+    bool private __lotteryOpen;
     uint256 private __startRoundBlockNumber;
     address private __operator;
     uint16 private __k;
     uint256 private __ticketPrice;
+    uint8 private __duration;
 
     uint8[TOTAL_NUMBERS] private __winningNumbers;
     address[] private __players;
-    Collectible[] private __collectibles;
     uint8[TOTAL_NUMBERS][] private __tickets;
+    Collectible[] private __collectibles;
 
-    constructor(address _erc721Address, uint16 _k, uint256 _ticketPrice) {
+    constructor(address _erc721Address, uint8 _duration, uint16 _k, uint256 _ticketPrice) {
         __operator = msg.sender;
         __erc721Address = _erc721Address;
         __k = _k + 1 % 256;
-        __roundActive = true;
+        __lotteryOpen = true;
         __ticketPrice = _ticketPrice;
+        __duration = _duration;
     }
 
     modifier __isOperator() {
@@ -44,13 +45,17 @@ contract TRY {
     }
 
     modifier __isRoundActive() {
-        require(__roundActive && block.number - __startRoundBlockNumber < DURATION, "Round is not active");
+        require(isRoundActive(), "Round is not active");
         _;
     }
 
+    function isRoundActive() public view returns(bool) {
+        return __lotteryOpen && block.number - __startRoundBlockNumber < __duration;
+    }
+
     function startNewRound() external {
-        require(!__roundActive, "Round is not finished");
-        __roundActive = true;
+        require(!__lotteryOpen, "Round is not finished");
+        __lotteryOpen = true;
         __startRoundBlockNumber = block.number;
     }
 
@@ -81,9 +86,11 @@ contract TRY {
                     ERC721(__erc721Address).mint(__players[i], _collectibles.uri);
                 }
             }
+            delete __players[i];
+            delete __tickets[i];
         }
         payable(__operator).transfer(address(this).balance);
-        this.startNewRound();
+        __lotteryOpen = false;
     }
 
     function mint(string memory _uri) external __isOperator() {
@@ -94,8 +101,11 @@ contract TRY {
     }
 
     function closeLottery() external __isOperator() {
-        require(__roundActive, "Lottery already closed");
-        __roundActive = false;
+        require(__lotteryOpen, "Lottery already closed");
+        for(uint8 i = 0; i < __players.length; i++) {
+            payable(__players[i]).transfer(__ticketPrice);
+        }
+        __lotteryOpen = false;
     }
 
     function __random() private view returns(uint256) {
