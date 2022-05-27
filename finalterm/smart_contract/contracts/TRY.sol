@@ -39,6 +39,11 @@ contract TRY {
         __duration = _duration;
     }
 
+    event StartNewRound(uint256 indexed _blockNumber);
+    event Buy(address indexed _player);
+    event GivePrize(address indexed _player, Classes indexed _class, uint256 indexed _tokenId);
+    event CloseLottery();
+
     modifier __isOperator() {
         require(__operator == msg.sender, "Operation unauthorized");
         _;
@@ -55,15 +60,17 @@ contract TRY {
 
     function startNewRound() external {
         require(!__lotteryOpen, "Round is not finished");
-        __lotteryOpen = true;
         __startRoundBlockNumber = block.number;
+        emit StartNewRound(__startRoundBlockNumber);
     }
 
     function buy(uint8[TOTAL_NUMBERS] memory numbers) external payable __isRoundActive() {
         require(msg.value >= __ticketPrice, "Not enough ether");
-        __players.push(msg.sender);
+        address player = msg.sender;
+        __players.push(player);
         __tickets.push(numbers);
-        payable(msg.sender).transfer(msg.value - __ticketPrice);
+        payable(player).transfer(msg.value - __ticketPrice);
+        emit Buy(player);
     }
 
     function drawNumbers() external __isOperator() {
@@ -76,15 +83,18 @@ contract TRY {
 
     function givePrizes() external __isOperator() {
         for(uint8 i = 0; i < __players.length; i++) {
-            if(__matchClass(__tickets[i]) != Classes.None) {
-                Collectible storage _collectibles = __collectibles[i];
-                require(_collectibles.tokenId > 0, "Not enough prizes");
-                if(_collectibles.available){
-                    ERC721(__erc721Address).safeTransferFrom(address(this), __players[i], _collectibles.tokenId);
-                    _collectibles.available = false;
+            Classes class = __matchClass(__tickets[i]);
+            address _player = __players[i];
+            if(class != Classes.None) {
+                Collectible storage _collectible = __collectibles[i];
+                require(_collectible.tokenId > 0, "Not enough prizes");
+                if(_collectible.available){
+                    ERC721(__erc721Address).safeTransferFrom(address(this), _player, _collectible.tokenId);
+                    _collectible.available = false;
                 } else {
-                    ERC721(__erc721Address).mint(__players[i], _collectibles.uri);
+                    ERC721(__erc721Address).mint(_player, _collectible.uri);
                 }
+                emit GivePrize(_player, class, _collectible.tokenId);
             }
             delete __players[i];
             delete __tickets[i];
@@ -102,10 +112,11 @@ contract TRY {
 
     function closeLottery() external __isOperator() {
         require(__lotteryOpen, "Lottery already closed");
-        for(uint8 i = 0; i < __players.length; i++) {
-            payable(__players[i]).transfer(__ticketPrice);
-        }
+        if(isRoundActive()) 
+            for(uint8 i = 0; i < __players.length; i++) 
+                payable(__players[i]).transfer(__ticketPrice);
         __lotteryOpen = false;
+        emit CloseLottery();
     }
 
     function __random() private view returns(uint256) {

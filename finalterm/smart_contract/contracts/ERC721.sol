@@ -24,6 +24,8 @@ contract ERC721 is IERC721, IERC721Metadata {
         __baseURI = _baseURI;
     }
 
+    event Mint(address indexed _to, uint256 indexed _tokenId, string indexed _uri);
+
     modifier __isApprovedOrOwner(address _from, uint256 _tokenId) {
         require(_tokenId != 0, "Token does not exists");
         address owner = this.ownerOf(_tokenId);
@@ -132,6 +134,6 @@ contract ERC721 is IERC721, IERC721Metadata {
         __tokens[_tokenId] = _uri;
         __owners[_tokenId] = _to;
         __balances[_to] += 1;
-        emit Transfer(address(0), _to, _tokenId);
+        emit Mint(_to, _tokenId, _uri);
     }
 }
