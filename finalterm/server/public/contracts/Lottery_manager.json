@@ -55,7 +55,7 @@
             },
             {
                 "indexed": true,
-                "internalType": "enum TRY.Classes",
+                "internalType": "enum Lottery.Classes",
                 "name": "_class",
                 "type": "uint8"
             },
@@ -83,6 +83,19 @@
         "type": "event"
     },
     {
+        "inputs": [
+            {
+                "internalType": "uint8[6]",
+                "name": "numbers",
+                "type": "uint8[6]"
+            }
+        ],
+        "name": "buy",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
         "inputs": [],
         "name": "closeLottery",
         "outputs": [],
@@ -101,6 +114,19 @@
         "name": "givePrizes",
         "outputs": [],
         "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "isLotteryOpen",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     },
     {

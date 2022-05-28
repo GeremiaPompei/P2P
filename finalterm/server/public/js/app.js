@@ -71,6 +71,7 @@ const app = Vue.createApp({
     },
     methods: {
         async init() {
+            this.setLoading(true);
             try {
                 this.initContractAddresses();
                 this.address = (await ethereum.enable())[0];
@@ -80,11 +81,12 @@ const app = Vue.createApp({
             } catch(e) {
                 this.notify(false, "Wallet connection error", e);
             }
+            this.setLoading(false);
         },
         initContractAddresses() {
             this.contracts = {
-                ERC721: {contract: undefined, address: "0x34d63d05F9d85d1ac135b2BFbA323F2F199844a8"},
-                TRY: {contract: undefined, address: "0x4e75327A8FA0Bb1C8f8d14A1F53353e1C9d513BE"},
+                ERC721: {contract: undefined, address: "0x78B511d8d8f40F30D6CEa49178e95E77478B1Eda"},
+                TRY: {contract: undefined, address: "0x03C32AfC900A82809Ed7309EAe8D752aFBb16BE8"},
             };
         },
         back() {
@@ -102,16 +104,42 @@ const app = Vue.createApp({
         notify(flag, title, description = "") {
             this.notification = { flag, title, description, show: true };
         },
-        sendPopup(title, description="", submit=undefined) {
+        sendPopup(options) {
             this.popup = {
-            title,
-            description,
-            submit,
-            show: true,
+                options,
+                show: true,
             };
         },
     },
   });
+
+  app.mixin({
+    methods: {
+        async contractFetch(contract, type, fetchFunc, callback=undefined) {
+            this.$emit("setLoading", true);
+            try {
+                const prevFunc = fetchFunc(this.contracts[contract].contract.methods);
+                if(type == "call") {
+                    const res = await prevFunc.call();
+                    await callback(res);
+                } else if(type = "send") {
+                    const trx = await prevFunc.send({from: this.address, gas: 3000000});
+                    if(callback)
+                        await callback(trx);
+                    this.$emit("notify", true, "[Success]", trx.transactionHash);
+                }
+            } catch(e) {
+                console.error(e);
+                if(e.data)
+                    this.$emit("notify", false, `[Transaction error]: ${e.data.name}`, Object.values(e.data)[0].reason);
+                else 
+                    this.$emit("notify", false, "[Internal error]", e);
+            }
+            this.$emit("setLoading", false);
+        }
+    }
+  });
+  
   
   app.mount("#app");
   

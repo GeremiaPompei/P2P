@@ -31,10 +31,11 @@ contract Lottery {
     Collectible[] private __collectibles;
 
     constructor(address _erc721Address, uint8 _duration, uint16 _k, uint256 _ticketPrice) {
-        __operator = msg.sender;
+        __operator = tx.origin;
         __erc721Address = _erc721Address;
         __k = _k + 1 % 256;
         __lotteryOpen = true;
+        __startRoundBlockNumber = block.number;
         __ticketPrice = _ticketPrice;
         __duration = _duration;
     }
@@ -56,6 +57,10 @@ contract Lottery {
 
     function isRoundActive() public view returns(bool) {
         return __lotteryOpen && block.number - __startRoundBlockNumber < __duration;
+    }
+
+    function isLotteryOpen() public view returns(bool) {
+        return __lotteryOpen;
     }
 
     function startNewRound() external {
@@ -82,6 +87,7 @@ contract Lottery {
     }
 
     function givePrizes() external __isOperator() {
+        require(!isRoundActive(), "Round is active");
         for(uint8 i = 0; i < __players.length; i++) {
             Classes class = __matchClass(__tickets[i]);
             address _player = __players[i];
@@ -100,7 +106,6 @@ contract Lottery {
             delete __tickets[i];
         }
         payable(__operator).transfer(address(this).balance);
-        __lotteryOpen = false;
     }
 
     function mint(string memory _uri) external __isOperator() {

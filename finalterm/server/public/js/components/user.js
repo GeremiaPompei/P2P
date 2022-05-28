@@ -4,30 +4,25 @@ export default {
       <div class="text-center">
         <h1>User</h1>
       </div>
-      <div class="row">
-        <div class="col w-20 border-right">
-            <div class="row">
-              <ListLotteries 
-                :eventsLotteryCreated="eventsLotteryCreated"
-                @loadLottery="loadLottery"
-              ></ListLotteries>
-            </div>
+      <div class="col">
+      <div class="row m-2 d-flex justify-content-md-center">
+          <button @click="popupListLotteries()" class="btn btn-primary m-2">
+            Lotteries
+          </button>
+      </div>
+      <div class="row d-flex justify-content-md-center">
+        <div v-if="contracts.Lottery">
+          <h6 class="text-center">
+            {{contracts.Lottery.address}}
+          </h6>
         </div>
-        <div class="col w-80" v-if="contracts.Lottery">
-          <div class="row">
-            <h5 class="text-center">
-              {{contracts.Lottery.address}}
-            </h5>
-          </div>
+        <div v-else>
+          No lottery loaded
         </div>
+      </div>
       </div>
     </div>
       `,
-      components: {
-        ListLotteries: Vue.defineAsyncComponent(() =>
-          import("./utility/list_lotteries.js")
-        ),
-      },
       props: {
         address: String,
         web3: Object,
@@ -40,8 +35,10 @@ export default {
         }
       },
       async created() {
+        this.$emit("setLoading", true);
         this.abiLottery = await (await fetch("contracts/Lottery_user.json")).json();
         await this.loadEvents();
+        this.$emit("setLoading", false);
       },
       methods: {
         async loadEvents() {
@@ -49,15 +46,33 @@ export default {
               fromBlock: 0,
               toBlock: 'latest'
           };
-          this.eventsLotteryCreated = await this.contracts.TRY.contract.getPastEvents('LotteryCreated', options);
-          this.eventsLotteryCreated.reverse();
-          this.contracts.TRY.contract.events.LotteryCreated(options).on("data", data => this.eventsLotteryCreated.unshift(data));
+          this.contracts.TRY.contract.events.LotteryCreated(options).on('data', e => {
+            const values = e.returnValues;
+            this.eventsLotteryCreated.unshift(values);
+          });
         },
-        async loadLottery(address) {
+        async loadLottery(e) {
+          const address = e._addressLottery;
           this.contracts.Lottery = {
             address,
             contract: new this.web3.eth.Contract(this.abiLottery, address)
           }
+        },
+        popupListLotteries() {
+          this.$emit(
+            'sendPopup', 
+            [
+              {
+                title: "Lotteries",
+                type: "table",
+                fields: [
+                  {title: '', type: 'button', value: '_addressLottery', select: this.loadLottery},
+                ],
+                notitle: true,
+                data: this.eventsLotteryCreated
+              }
+            ]
+          );
         }
-      }
+      },
   };

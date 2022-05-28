@@ -55,7 +55,7 @@
             },
             {
                 "indexed": true,
-                "internalType": "enum TRY.Classes",
+                "internalType": "enum Lottery.Classes",
                 "name": "_class",
                 "type": "uint8"
             },
@@ -67,6 +67,19 @@
             }
         ],
         "name": "GivePrize",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "_blockNumber",
+                "type": "uint256"
+            }
+        ],
+        "name": "StartNewRound",
         "type": "event"
     },
     {
@@ -84,9 +97,36 @@
     },
     {
         "inputs": [],
+        "name": "closeLottery",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "drawNumbers",
         "outputs": [],
         "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "givePrizes",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "isLotteryOpen",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     },
     {
@@ -100,6 +140,26 @@
             }
         ],
         "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "string",
+                "name": "_uri",
+                "type": "string"
+            }
+        ],
+        "name": "mint",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "startNewRound",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
     }
 ]
