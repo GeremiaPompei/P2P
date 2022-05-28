@@ -9,7 +9,7 @@ export default {
             <div v-for="(struct, c) in row" :key="c" class="col form-group">
               <label :for="struct.attribute">{{struct.title}}</label>
               <input v-if="struct.type=='number'" 
-                  type="number" min="0" class="form-control" :id="struct.attribute" v-model="data[struct.attribute]">
+                  type="number" :min="struct.min" :max="struct.max" class="form-control" :id="struct.attribute" v-model="data[struct.attribute]">
               <input v-else-if="struct.type=='date'" 
                 type="date" class="form-control" :id="struct.attribute" v-model="data[struct.attribute]">
               <select v-else-if="struct.type=='select'"

@@ -83,6 +83,56 @@
         "type": "event"
     },
     {
+        "inputs": [],
+        "name": "POWERBALL_POSITION",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "name": "RANGES",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "TOTAL_NUMBERS",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "internalType": "uint8[6]",
@@ -111,6 +161,32 @@
     },
     {
         "inputs": [],
+        "name": "duration",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "erc721Address",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "givePrizes",
         "outputs": [],
         "stateMutability": "nonpayable",
@@ -118,7 +194,7 @@
     },
     {
         "inputs": [],
-        "name": "isLotteryOpen",
+        "name": "isRoundActive",
         "outputs": [
             {
                 "internalType": "bool",
@@ -131,7 +207,7 @@
     },
     {
         "inputs": [],
-        "name": "isRoundActive",
+        "name": "lotteryOpen",
         "outputs": [
             {
                 "internalType": "bool",
@@ -160,6 +236,19 @@
         "name": "startNewRound",
         "outputs": [],
         "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "ticketPrice",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     }
 ]

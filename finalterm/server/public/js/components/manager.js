@@ -31,6 +31,11 @@ export default {
                   </div>
                 </div>
                 <div class="row">
+                  <div class="col" v-if="!roundStatus">
+                    <div class="row d-flex justify-content-md-center">
+                      <button @click="startNewRound()" class="btn btn-primary m-2">Start new round</button>
+                    </div>
+                  </div>
                   <div class="col">
                     <div class="row d-flex justify-content-md-center">
                       <button @click="drawNumbers()" class="btn btn-primary m-2">Draw numbers</button>
@@ -64,11 +69,6 @@ export default {
       </div>
     </div>
       `,
-      components: {
-        ListLotteries: Vue.defineAsyncComponent(() =>
-          import("./utility/list_lotteries.js")
-        ),
-      },
       props: {
         address: String,
         web3: Object,
@@ -119,9 +119,12 @@ export default {
             address,
             contract: new this.web3.eth.Contract(this.abiLottery, address)
           };
-          await this.contractFetch("Lottery", "call", f => f.isLotteryOpen(), r => this.lotteryStatus = r);
+          await this.contractFetch("Lottery", "call", f => f.lotteryOpen(), async r => this.lotteryStatus = r);
           await this.contractFetch("Lottery", "call", f => f.isRoundActive(), r => this.roundStatus = r);
           this.$emit("setLoading", false);
+        },
+        async startNewRound() {
+          await this.contractFetch("Lottery", "send", f => f.startNewRound(), this.update);
         },
         async update() {
           await this.loadLottery({_addressLottery: this.contracts.Lottery.address});

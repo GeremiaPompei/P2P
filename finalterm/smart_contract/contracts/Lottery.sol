@@ -13,17 +13,17 @@ contract Lottery {
         bool available;
     }
 
-    uint8 private constant TOTAL_NUMBERS = 6;
-    uint8 private constant POWERBALL_POSITION = 5;
-    uint8[2][TOTAL_NUMBERS] private RANGES = [[1, 69], [1, 69], [1, 69], [1, 69], [1, 69], [1, 26]];
+    uint8 public constant TOTAL_NUMBERS = 6;
+    uint8 public constant POWERBALL_POSITION = 5;
+    uint8[2][TOTAL_NUMBERS] public RANGES = [[1, 69], [1, 69], [1, 69], [1, 69], [1, 69], [1, 26]];
 
-    address private __erc721Address;
-    bool private __lotteryOpen;
     uint256 private __startRoundBlockNumber;
     address private __operator;
     uint16 private __k;
-    uint256 private __ticketPrice;
-    uint8 private __duration;
+    address public erc721Address;
+    bool public lotteryOpen;
+    uint256 public ticketPrice;
+    uint8 public duration;
 
     uint8[TOTAL_NUMBERS] private __winningNumbers;
     address[] private __players;
@@ -32,12 +32,12 @@ contract Lottery {
 
     constructor(address _erc721Address, uint8 _duration, uint16 _k, uint256 _ticketPrice) {
         __operator = tx.origin;
-        __erc721Address = _erc721Address;
+        erc721Address = _erc721Address;
         __k = _k + 1 % 256;
-        __lotteryOpen = true;
+        lotteryOpen = true;
         __startRoundBlockNumber = block.number;
-        __ticketPrice = _ticketPrice;
-        __duration = _duration;
+        ticketPrice = _ticketPrice;
+        duration = _duration;
     }
 
     event StartNewRound(uint256 indexed _blockNumber);
@@ -56,25 +56,21 @@ contract Lottery {
     }
 
     function isRoundActive() public view returns(bool) {
-        return __lotteryOpen && block.number - __startRoundBlockNumber < __duration;
-    }
-
-    function isLotteryOpen() public view returns(bool) {
-        return __lotteryOpen;
+        return lotteryOpen && block.number - __startRoundBlockNumber < duration;
     }
 
     function startNewRound() external {
-        require(!__lotteryOpen, "Round is not finished");
+        require(!lotteryOpen, "Round is not finished");
         __startRoundBlockNumber = block.number;
         emit StartNewRound(__startRoundBlockNumber);
     }
 
     function buy(uint8[TOTAL_NUMBERS] memory numbers) external payable __isRoundActive() {
-        require(msg.value >= __ticketPrice, "Not enough ether");
+        require(msg.value >= ticketPrice, "Not enough ether");
         address player = msg.sender;
         __players.push(player);
         __tickets.push(numbers);
-        payable(player).transfer(msg.value - __ticketPrice);
+        payable(player).transfer(msg.value - ticketPrice);
         emit Buy(player);
     }
 
@@ -95,10 +91,10 @@ contract Lottery {
                 Collectible storage _collectible = __collectibles[i];
                 require(_collectible.tokenId > 0, "Not enough prizes");
                 if(_collectible.available){
-                    ERC721(__erc721Address).safeTransferFrom(address(this), _player, _collectible.tokenId);
+                    ERC721(erc721Address).safeTransferFrom(address(this), _player, _collectible.tokenId);
                     _collectible.available = false;
                 } else {
-                    ERC721(__erc721Address).mint(_player, _collectible.uri);
+                    ERC721(erc721Address).mint(_player, _collectible.uri);
                 }
                 emit GivePrize(_player, class, _collectible.tokenId);
             }
@@ -109,18 +105,18 @@ contract Lottery {
     }
 
     function mint(string memory _uri) external __isOperator() {
-        uint256 _tokenId = ERC721(__erc721Address).mint(address(this), _uri);
+        uint256 _tokenId = ERC721(erc721Address).mint(address(this), _uri);
         if(__collectibles.length + 1 > uint8(Classes.Class_8))
             __collectibles.pop();
         __collectibles.push(Collectible(_tokenId, _uri, true));
     }
 
     function closeLottery() external __isOperator() {
-        require(__lotteryOpen, "Lottery already closed");
+        require(lotteryOpen, "Lottery already closed");
         if(isRoundActive()) 
             for(uint8 i = 0; i < __players.length; i++) 
-                payable(__players[i]).transfer(__ticketPrice);
-        __lotteryOpen = false;
+                payable(__players[i]).transfer(ticketPrice);
+        lotteryOpen = false;
         emit CloseLottery();
     }
 

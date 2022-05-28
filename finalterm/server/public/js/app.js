@@ -73,7 +73,7 @@ const app = Vue.createApp({
         async init() {
             this.setLoading(true);
             try {
-                this.initContractAddresses();
+                await this.initContractAddresses();
                 this.address = (await ethereum.enable())[0];
                 const web3Provider = new Web3.providers.WebsocketProvider(this.url);
                 this.web3 = new Web3(web3Provider);
@@ -83,15 +83,16 @@ const app = Vue.createApp({
             }
             this.setLoading(false);
         },
-        initContractAddresses() {
+        async  initContractAddresses() {
+            const addresses = await (await fetch("api/contract_addresses")).json();
             this.contracts = {
-                ERC721: {contract: undefined, address: "0x78B511d8d8f40F30D6CEa49178e95E77478B1Eda"},
-                TRY: {contract: undefined, address: "0x03C32AfC900A82809Ed7309EAe8D752aFBb16BE8"},
+                ERC721: {contract: undefined, address: addresses.ERC721},
+                TRY: {contract: undefined, address: addresses.TRY},
             };
         },
-        back() {
+        async back() {
             this.role = undefined;
-            this.initContractAddresses();
+            await this.initContractAddresses();
         },
         async initContracts(role) {
             this.contracts.ERC721.contract = new this.web3.eth.Contract(await (await fetch("contracts/ERC721.json")).json(), this.contracts.ERC721.address);
@@ -115,15 +116,15 @@ const app = Vue.createApp({
 
   app.mixin({
     methods: {
-        async contractFetch(contract, type, fetchFunc, callback=undefined) {
+        async contractFetch(contract, type, fetchFunc, callback=undefined, value=0) {
             this.$emit("setLoading", true);
             try {
-                const prevFunc = fetchFunc(this.contracts[contract].contract.methods);
+                const prevFunc = await fetchFunc(this.contracts[contract].contract.methods);
                 if(type == "call") {
                     const res = await prevFunc.call();
                     await callback(res);
                 } else if(type = "send") {
-                    const trx = await prevFunc.send({from: this.address, gas: 3000000});
+                    const trx = await prevFunc.send({from: this.address, gas: 3000000, value});
                     if(callback)
                         await callback(trx);
                     this.$emit("notify", true, "[Success]", trx.transactionHash);

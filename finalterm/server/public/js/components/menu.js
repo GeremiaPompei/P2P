@@ -6,12 +6,12 @@ export default {
         </div>
         <div class="row">
           <div class="col d-flex align-items-center justify-content-center">
-          <div class="btn btn-primary" @click="() => $emit('setRole', 'manager')">
+          <div class="btn btn-primary" type="submit" @click="() => $emit('setRole', 'manager')">
             Manager
           </div>
           </div>
           <div class="col d-flex align-items-center justify-content-center">
-            <div class="btn btn-primary" @click="() => $emit('setRole', 'user')">
+            <div class="btn btn-primary" type="submit" @click="() => $emit('setRole', 'user')">
               User
             </div>
           </div>
