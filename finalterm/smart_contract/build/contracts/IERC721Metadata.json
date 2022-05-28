@@ -56,20 +56,20 @@
   "sourceMap": "",
   "deployedSourceMap": "",
   "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\n/// @title ERC-721 Non-Fungible Token Standard, optional metadata extension\n/// @dev See https://eips.ethereum.org/EIPS/eip-721\n///  Note: the ERC-165 identifier for this interface is 0x5b5e139f.\ninterface IERC721Metadata /* is ERC721 */ {\n    /// @notice A descriptive name for a collection of NFTs in this contract\n    function name() external view returns (string memory _name);\n\n    /// @notice An abbreviated name for NFTs in this contract\n    function symbol() external view returns (string memory _symbol);\n\n    /// @notice A distinct Uniform Resource Identifier (URI) for a given asset.\n    /// @dev Throws if `_tokenId` is not a valid NFT. URIs are defined in RFC\n    ///  3986. The URI may point to a JSON file that conforms to the \"ERC721\n    ///  Metadata JSON Schema\".\n    function tokenURI(uint256 _tokenId) external view returns (string memory);\n}",
-  "sourcePath": "/Users/geremiapompei/Library/CloudStorage/OneDrive-UniversityofPisa/UNIPI/1 anno 2021_2022/2 semestre/Peer2Peer and Blockchain/exam/P2P/finalterm/TRY/contracts/IERC721Metadata.sol",
+  "sourcePath": "/Users/geremiapompei/Library/CloudStorage/OneDrive-UniversityofPisa/UNIPI/1 anno 2021_2022/2 semestre/Peer2Peer and Blockchain/exam/P2P/finalterm/smart_contract/contracts/IERC721Metadata.sol",
   "ast": {
     "absolutePath": "project:/contracts/IERC721Metadata.sol",
     "exportedSymbols": {
       "IERC721Metadata": [
-        719
+        724
       ]
     },
-    "id": 720,
+    "id": 725,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 697,
+        "id": 702,
         "literals": [
           "solidity",
           "^",
@@ -86,15 +86,15 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "documentation": {
-          "id": 698,
+          "id": 703,
           "nodeType": "StructuredDocumentation",
           "src": "57:196:2",
           "text": "@title ERC-721 Non-Fungible Token Standard, optional metadata extension\n @dev See https://eips.ethereum.org/EIPS/eip-721\n  Note: the ERC-165 identifier for this interface is 0x5b5e139f."
         },
         "fullyImplemented": false,
-        "id": 719,
+        "id": 724,
         "linearizedBaseContracts": [
-          719
+          724
         ],
         "name": "IERC721Metadata",
         "nameLocation": "263:15:2",
@@ -102,13 +102,13 @@
         "nodes": [
           {
             "documentation": {
-              "id": 699,
+              "id": 704,
               "nodeType": "StructuredDocumentation",
               "src": "301:72:2",
               "text": "@notice A descriptive name for a collection of NFTs in this contract"
             },
             "functionSelector": "06fdde03",
-            "id": 704,
+            "id": 709,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -116,23 +116,23 @@
             "nameLocation": "387:4:2",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 700,
+              "id": 705,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "391:2:2"
             },
             "returnParameters": {
-              "id": 703,
+              "id": 708,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 702,
+                  "id": 707,
                   "mutability": "mutable",
                   "name": "_name",
                   "nameLocation": "431:5:2",
                   "nodeType": "VariableDeclaration",
-                  "scope": 704,
+                  "scope": 709,
                   "src": "417:19:2",
                   "stateVariable": false,
                   "storageLocation": "memory",
@@ -141,7 +141,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 701,
+                    "id": 706,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "417:6:2",
@@ -155,7 +155,7 @@
               ],
               "src": "416:21:2"
             },
-            "scope": 719,
+            "scope": 724,
             "src": "378:60:2",
             "stateMutability": "view",
             "virtual": false,
@@ -163,13 +163,13 @@
           },
           {
             "documentation": {
-              "id": 705,
+              "id": 710,
               "nodeType": "StructuredDocumentation",
               "src": "444:57:2",
               "text": "@notice An abbreviated name for NFTs in this contract"
             },
             "functionSelector": "95d89b41",
-            "id": 710,
+            "id": 715,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -177,23 +177,23 @@
             "nameLocation": "515:6:2",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 706,
+              "id": 711,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "521:2:2"
             },
             "returnParameters": {
-              "id": 709,
+              "id": 714,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 708,
+                  "id": 713,
                   "mutability": "mutable",
                   "name": "_symbol",
                   "nameLocation": "561:7:2",
                   "nodeType": "VariableDeclaration",
-                  "scope": 710,
+                  "scope": 715,
                   "src": "547:21:2",
                   "stateVariable": false,
                   "storageLocation": "memory",
@@ -202,7 +202,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 707,
+                    "id": 712,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "547:6:2",
@@ -216,7 +216,7 @@
               ],
               "src": "546:23:2"
             },
-            "scope": 719,
+            "scope": 724,
             "src": "506:64:2",
             "stateMutability": "view",
             "virtual": false,
@@ -224,13 +224,13 @@
           },
           {
             "documentation": {
-              "id": 711,
+              "id": 716,
               "nodeType": "StructuredDocumentation",
               "src": "576:262:2",
               "text": "@notice A distinct Uniform Resource Identifier (URI) for a given asset.\n @dev Throws if `_tokenId` is not a valid NFT. URIs are defined in RFC\n  3986. The URI may point to a JSON file that conforms to the \"ERC721\n  Metadata JSON Schema\"."
             },
             "functionSelector": "c87b56dd",
-            "id": 718,
+            "id": 723,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -238,17 +238,17 @@
             "nameLocation": "852:8:2",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 714,
+              "id": 719,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 713,
+                  "id": 718,
                   "mutability": "mutable",
                   "name": "_tokenId",
                   "nameLocation": "869:8:2",
                   "nodeType": "VariableDeclaration",
-                  "scope": 718,
+                  "scope": 723,
                   "src": "861:16:2",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -257,7 +257,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 712,
+                    "id": 717,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "861:7:2",
@@ -272,17 +272,17 @@
               "src": "860:18:2"
             },
             "returnParameters": {
-              "id": 717,
+              "id": 722,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 716,
+                  "id": 721,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 718,
+                  "scope": 723,
                   "src": "902:13:2",
                   "stateVariable": false,
                   "storageLocation": "memory",
@@ -291,7 +291,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 715,
+                    "id": 720,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "902:6:2",
@@ -305,14 +305,14 @@
               ],
               "src": "901:15:2"
             },
-            "scope": 719,
+            "scope": 724,
             "src": "843:74:2",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 720,
+        "scope": 725,
         "src": "253:666:2",
         "usedErrors": []
       }
@@ -325,7 +325,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.7",
-  "updatedAt": "2022-05-26T22:31:35.605Z",
+  "updatedAt": "2022-05-27T13:47:37.976Z",
   "devdoc": {
     "details": "See https://eips.ethereum.org/EIPS/eip-721  Note: the ERC-165 identifier for this interface is 0x5b5e139f.",
     "kind": "dev",
