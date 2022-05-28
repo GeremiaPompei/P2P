@@ -97,10 +97,7 @@ export default {
               _owner: this.address.toUpperCase()
             }
           };
-          this.contracts.TRY.contract.events.LotteryCreated(options).on('data', e => {
-            const values = e.returnValues;
-            this.eventsLotteryCreated.unshift(values);
-          });
+          this.contracts.TRY.contract.events.LotteryCreated(options).on('data', e => this.eventsLotteryCreated.unshift(e.returnValues));
         },
         async createLottery(data) {
           await this.contractFetch(

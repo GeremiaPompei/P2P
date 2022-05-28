@@ -56,16 +56,17 @@ contract Lottery {
     }
 
     function isRoundActive() public view returns(bool) {
-        return lotteryOpen && block.number - __startRoundBlockNumber < duration;
+        return block.number - __startRoundBlockNumber < duration;
     }
 
     function startNewRound() external {
-        require(!lotteryOpen, "Round is not finished");
+        require(!isRoundActive(), "Round is not finished");
         __startRoundBlockNumber = block.number;
         emit StartNewRound(__startRoundBlockNumber);
     }
 
     function buy(uint8[TOTAL_NUMBERS] memory numbers) external payable __isRoundActive() {
+        require(lotteryOpen, "Lottery is closed");
         require(msg.value >= ticketPrice, "Not enough ether");
         address player = msg.sender;
         __players.push(player);
