@@ -2,9 +2,11 @@ export default {
     template: /*html*/`
     <div v-if="popup.show" class="popup-container">
         <div class="popup-body">
-            <button type="button" class="close close-popup" data-dismiss="alert" aria-label="Close" @click="close()">
-                <span aria-hidden="true">&times;</span>
-            </button>
+            <div class="row d-flex justify-content-end">
+                <button type="button" class="close close-popup" data-dismiss="alert" aria-label="Close" @click="close()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
             <div v-for="(option, key) in popup.options" :key="key">
                 <Table v-if="option.type=='table'"
                     :title="option.title"

@@ -155,6 +155,15 @@ const app = Vue.createApp({
               break;
           }
           return {title, description};
+        },
+        formatState(s) {
+          switch(s) {
+            case "0": return "Buy";
+            case "1": return "Draw";
+            case "2": return "Prize";
+            case "3": return "RoundFinished";
+            case "4": return "Close";
+          }
         }
     }
   });

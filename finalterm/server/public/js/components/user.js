@@ -13,22 +13,47 @@ export default {
         <div v-if="contracts.Lottery" class="row">
           <div class="col">
             <div class="row d-flex justify-content-md-center">
-              <div>
-                <h6 class="text-center">
-                  Lottery: {{contracts.Lottery.address}}
-                </h6>
+              <h6 class="text-center">
+                Lottery: {{contracts.Lottery.address}}
+              </h6>
+            </div>
+            <div class="row d-flex justify-content-md-center">
+              <div class="col">
+                <p class="text-center">
+                  Duration: {{info.duration}}
+                </p>
+              </div>
+              <div class="col">
+                <p class="text-center">
+                  Round: {{info.round}}
+                </p>
+              </div>
+              <div class="col">
+                <p class="text-center">
+                  Ticket price: {{info.ticketPrice}} WEI
+                </p>
+              </div>
+              <div class="col">
+                <p class="text-center">
+                  First block number of round: {{info.startRoundBlockNumber}}
+                </p>
               </div>
             </div>
-            <div v-if="lotteryStatus">
+            <div v-if="info.state != 'Close'">
               <div class="row">
                 <div class="col">
                   <div class="row d-flex justify-content-md-center">
-                    <h5 :class="roundStatus ? 'text-success' : 'text-danger'">ROUND {{roundStatus ? 'OPEN' : 'CLOSE'}}</h5>
+                    <h5>State: {{info.state}}</h5>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="row d-flex justify-content-md-center">
+                    <h5 :class="info.state == 'Buy' ? 'text-success' : 'text-danger'">You {{info.state == 'Buy' ? 'can' : 'cannot'}} buy</h5>
                   </div>
                 </div>
               </div>
               <div class="row">
-                <div class="col" v-if="roundStatus">
+                <div class="col" v-if="info.state == 'Buy'">
                   <div class="row d-flex justify-content-md-center">
                     <button @click="popupBuy()" class="btn btn-primary m-2">Buy</button>
                   </div>
@@ -38,20 +63,20 @@ export default {
             <div v-else class="row d-flex justify-content-md-center">
               <h5 class="text-danger">Lottery is closed</h5>
             </div>
+            <div class="row d-flex justify-content-md-center">
+              <Table
+                title="Events"
+                :data="allEvents"
+                :fields="[
+                  {title: 'Title', type: 'text', value: 'title'},
+                  {title: 'Description', type: 'text', value: 'description'},
+                ]"
+              ></Table>
+            </div>
           </div>
         </div>
         <div v-else class="row d-flex justify-content-md-center">
           No lottery loaded
-        </div>
-        <div class="row d-flex justify-content-md-center">
-          <Table
-            title="Events"
-            :data="allEvents"
-            :fields="[
-              {title: 'Title', type: 'text', value: 'title'},
-              {title: 'Description', type: 'text', value: 'description'},
-            ]"
-          ></Table>
         </div>
     </div>
   </div>
@@ -69,8 +94,7 @@ export default {
         abiLottery: {},
         eventsLotteryCreated: [],
         allEvents: [],
-        lotteryStatus: undefined,
-        roundStatus: undefined,
+        info: {},
       }
     },
     async created() {
@@ -84,7 +108,10 @@ export default {
         this.contracts.TRY.contract.events.LotteryCreated({
           fromBlock: 0,
           toBlock: 'latest',
-        }).on('data', e => this.eventsLotteryCreated.unshift(e.returnValues));
+        }).on('data', e => {
+          this.eventsLotteryCreated.unshift(e.returnValues);
+          this.$emit("notify", true, "New lottery available", e.returnValues._addressLottery);
+        });
       },
       async loadLottery(e) {
         this.$emit("setLoading", true);
@@ -93,8 +120,11 @@ export default {
           address,
           contract: new this.web3.eth.Contract(this.abiLottery, address)
         };
-        await this.contractFetch("Lottery", "call", f => f.lotteryOpen(), async r => this.lotteryStatus = r);
-        await this.contractFetch("Lottery", "call", f => f.isRoundActive(), r => this.roundStatus = r);
+        await this.contractFetch("Lottery", "call", f => f.state(), async r => this.info.state = this.formatState(r));
+        await this.contractFetch("Lottery", "call", f => f.duration(), r => this.info.duration = r);
+        await this.contractFetch("Lottery", "call", f => f.round(), r => this.info.round = r);
+        await this.contractFetch("Lottery", "call", f => f.startRoundBlockNumber(), r => this.info.startRoundBlockNumber = r);
+        await this.contractFetch("Lottery", "call", f => f.ticketPrice(), r => this.info.ticketPrice = r);
         this.allEvents.splice(0);
         this.contracts.Lottery.contract.events.allEvents({
           fromBlock: 0,
