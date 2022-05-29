@@ -15,7 +15,7 @@ export default {
             <div class="row d-flex justify-content-md-center">
               <div>
                 <h6 class="text-center">
-                  {{contracts.Lottery.address}}
+                  Lottery: {{contracts.Lottery.address}}
                 </h6>
               </div>
             </div>
@@ -43,9 +43,22 @@ export default {
         <div v-else class="row d-flex justify-content-md-center">
           No lottery loaded
         </div>
+        <div class="row d-flex justify-content-md-center">
+          <Table
+            title="Events"
+            :data="allEvents"
+            :fields="[
+              {title: 'Title', type: 'text', value: 'title'},
+              {title: 'Description', type: 'text', value: 'description'},
+            ]"
+          ></Table>
+        </div>
     </div>
   </div>
     `,
+    components: {
+      Table: Vue.defineAsyncComponent(() => import("./utility/table.js")),
+    },
     props: {
       address: String,
       web3: Object,
@@ -55,6 +68,7 @@ export default {
       return {
         abiLottery: {},
         eventsLotteryCreated: [],
+        allEvents: [],
         lotteryStatus: undefined,
         roundStatus: undefined,
       }
@@ -67,14 +81,10 @@ export default {
     },
     methods: {
       async loadEvents() {
-        const options = {
+        this.contracts.TRY.contract.events.LotteryCreated({
           fromBlock: 0,
           toBlock: 'latest',
-          filter: {
-            _owner: this.address.toUpperCase()
-          }
-        };
-        this.contracts.TRY.contract.events.LotteryCreated(options).on('data', e => this.eventsLotteryCreated.unshift(e.returnValues));
+        }).on('data', e => this.eventsLotteryCreated.unshift(e.returnValues));
       },
       async loadLottery(e) {
         this.$emit("setLoading", true);
@@ -83,8 +93,13 @@ export default {
           address,
           contract: new this.web3.eth.Contract(this.abiLottery, address)
         };
-        await this.contractFetch("Lottery", "call", async f => f.lotteryOpen(), r => this.lotteryStatus = r);
+        await this.contractFetch("Lottery", "call", f => f.lotteryOpen(), async r => this.lotteryStatus = r);
         await this.contractFetch("Lottery", "call", f => f.isRoundActive(), r => this.roundStatus = r);
+        this.allEvents.splice(0);
+        this.contracts.Lottery.contract.events.allEvents({
+          fromBlock: 0,
+          toBlock: 'latest'
+        }).on('data', e => this.allEvents.unshift(this.formatEvent(e)));
         this.$emit("setLoading", false);
       },
       async update() {
@@ -93,7 +108,8 @@ export default {
       async buy(data) {
         let ticketPrice = 0;
         await this.contractFetch("Lottery", "call", f => f.ticketPrice(), r => ticketPrice = r);
-        await this.contractFetch("Lottery", "send", f => f.buy([data.n1, data.n2, data.n3, data.n4,  data.n5,  data.powerball]), this.update, ticketPrice);
+        await this.contractFetch("Lottery", "send", f => f.buy([data.n1, data.n2, data.n3, data.n4,  data.n5,  data.powerball]), undefined, ticketPrice);
+        await this.update();
       },
       popupListLotteries() {
         this.$emit(

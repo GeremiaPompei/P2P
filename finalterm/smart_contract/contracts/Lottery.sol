@@ -24,6 +24,7 @@ contract Lottery {
     bool public lotteryOpen;
     uint256 public ticketPrice;
     uint8 public duration;
+    uint256 public round;
 
     uint8[TOTAL_NUMBERS] private __winningNumbers;
     address[] private __players;
@@ -38,11 +39,15 @@ contract Lottery {
         __startRoundBlockNumber = block.number;
         ticketPrice = _ticketPrice;
         duration = _duration;
+        round = 1;
+        emit StartNewRound(__startRoundBlockNumber, round);
     }
 
-    event StartNewRound(uint256 indexed _blockNumber);
+    event StartNewRound(uint256 indexed _blockNumber, uint256 _round);
     event Buy(address indexed _player);
-    event GivePrize(address indexed _player, Classes indexed _class, uint256 indexed _tokenId);
+    event DrawNumbers();
+    event NoGivePrize(address indexed _player, uint256 _round);
+    event GivePrize(address indexed _player, uint256 _round, Classes indexed _class, uint256 indexed _tokenId);
     event CloseLottery();
 
     modifier __isOperator() {
@@ -62,7 +67,8 @@ contract Lottery {
     function startNewRound() external {
         require(!isRoundActive(), "Round is not finished");
         __startRoundBlockNumber = block.number;
-        emit StartNewRound(__startRoundBlockNumber);
+        round += 1;
+        emit StartNewRound(__startRoundBlockNumber, round);
     }
 
     function buy(uint8[TOTAL_NUMBERS] memory numbers) external payable __isRoundActive() {
@@ -81,6 +87,7 @@ contract Lottery {
             __winningNumbers[i] = uint8(number) % RANGES[i][1] + RANGES[i][0];
             number /= 100;
         }
+        emit DrawNumbers();
     }
 
     function givePrizes() external __isOperator() {
@@ -97,7 +104,9 @@ contract Lottery {
                 } else {
                     ERC721(erc721Address).mint(_player, _collectible.uri);
                 }
-                emit GivePrize(_player, class, _collectible.tokenId);
+                emit GivePrize(_player, round, class, _collectible.tokenId);
+            } else {
+                emit NoGivePrize(_player, round);
             }
             delete __players[i];
             delete __tickets[i];

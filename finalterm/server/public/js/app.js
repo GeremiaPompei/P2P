@@ -137,6 +137,24 @@ const app = Vue.createApp({
                     this.$emit("notify", false, "[Internal error]", e);
             }
             this.$emit("setLoading", false);
+        },
+        formatEvent(e) {
+          const title = e.event;
+          const v = e.returnValues;
+          let description = "";
+          switch(title) {
+            case "StartNewRound": description = `Start round ${v._round} from block number ${v._blockNumber}`; break;
+            case "Buy": description = `Bought new ticket from address ${v._player}`; break;
+            case "CloseLottery": description = `Lottery closed from operator`; break;
+            case "NoGivePrize": description = `No prize won by ${v._player} in round ${v._round}`; break;
+            case "DrawNumbers": description = `Numbers drawn`; break;
+            case "GivePrize": 
+              description = `NFT with token id ${v._tokenId} of class ${v._class} won by ${v._player} in round ${v._round}`; 
+              if(this.address == v._player)
+                this.$emit('notify', true, `You won round ${v._round}`, `You earcn NFT with id ${v._tokenId} of class ${v._class}`);
+              break;
+          }
+          return {title, description};
         }
     }
   });
