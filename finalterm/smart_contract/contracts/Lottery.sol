@@ -86,7 +86,8 @@ contract Lottery {
         require(state == State.Draw, "You cannot draw now");
         uint256 number = __random();
         for(uint8 i = 0; i < TOTAL_NUMBERS; i++) {
-            __winningNumbers[i] = uint8(number) % RANGES[i][1] + RANGES[i][0];
+            __winningNumbers[i] = 1;//uint8(number) % RANGES[i][1] + RANGES[i][0];
+            __checkEqualNumbers(i);
             number /= 100;
         }
         state = State.Prize;
@@ -141,7 +142,23 @@ contract Lottery {
     function __random() private view returns(uint256) {
         uint256 blockNumber = startRoundBlockNumber + duration + __k;
         require(blockNumber <= block.number, "Block not yet generated");
-        return uint256(keccak256(abi.encode(blockhash(blockNumber))));
+        return uint256(keccak256(abi.encode(blockhash(blockNumber), round, block.timestamp)));
+    }
+
+    function __checkEqualNumbers(uint8 i) private {
+        if(i != POWERBALL_POSITION) {
+            bool toCheck = true;
+            while(toCheck) {
+                toCheck = false;
+                for(uint8 j = 0; j < i; j++) {
+                    if(__winningNumbers[i] == __winningNumbers[j]) {
+                        __winningNumbers[i] += 1;
+                        toCheck = true;
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     function __matchClass(uint8[TOTAL_NUMBERS] memory _ticket) private view returns(Class class) {

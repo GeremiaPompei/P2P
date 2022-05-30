@@ -275,7 +275,7 @@ export default {
                 fields: [
                   {title: 'Class', type: 'text', value: 'class'},
                   {title: 'Id', type: 'text', value: 'tokenId'},
-                  {title: 'NFT', type: 'img', value: 'uri'},
+                  {title: 'Image', type: 'img', value: 'uri'},
                 ],
                 data: this.prizes.filter(c => Number.parseInt(c.collectible.tokenId) > 0).map(c => {return {class: c.class, tokenId: c.collectible.tokenId, uri: c.collectible.uri};})
               }
