@@ -61,19 +61,19 @@ export default {
                       <button @click="startNewRound()" class="btn btn-primary m-2">Start new round</button>
                     </div>
                   </div>
-                  <div class="col">
+                  <div class="col" v-if="info.state == 'Draw'">
                     <div class="row d-flex justify-content-md-center">
                       <button @click="drawNumbers()" class="btn btn-primary m-2">Draw numbers</button>
+                    </div>
+                  </div>
+                  <div class="col" v-if="info.state == 'Prize'">
+                    <div class="row d-flex justify-content-md-center">
+                      <button @click="givePrizes()" class="btn btn-primary m-2">Give prizes</button>
                     </div>
                   </div>
                   <div class="col">
                     <div class="row d-flex justify-content-md-center">
                       <button @click="popupMint()" class="btn btn-primary m-2">Mint</button>
-                    </div>
-                  </div>
-                  <div class="col">
-                    <div class="row d-flex justify-content-md-center">
-                      <button @click="givePrizes()" class="btn btn-primary m-2">Give prizes</button>
                     </div>
                   </div>
                   <div class="col">
@@ -163,6 +163,10 @@ export default {
             fromBlock: 0,
             toBlock: 'latest'
           }).on('data', e => this.allEvents.unshift(this.formatEvent(e)));
+          this.contracts.Lottery.contract.events.ChangeState({
+            fromBlock: 0,
+            toBlock: 'latest'
+          }).on('data', s => this.info.state = this.formatState(s.returnValues._state));
           this.$emit("setLoading", false);
         },
         async startNewRound() {

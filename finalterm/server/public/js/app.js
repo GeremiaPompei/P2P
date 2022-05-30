@@ -148,6 +148,7 @@ const app = Vue.createApp({
             case "CloseLottery": description = `Lottery closed from operator`; break;
             case "NoGivePrize": description = `No prize won by ${v._player} in round ${v._round}`; break;
             case "DrawNumbers": description = `Numbers drawn`; break;
+            case "ChangeState": description = `Change state in ${this.formatState(v._state)}`; break;
             case "GivePrize": 
               description = `NFT with token id ${v._tokenId} of class ${v._class} won by ${v._player} in round ${v._round}`; 
               if(this.address == v._player)

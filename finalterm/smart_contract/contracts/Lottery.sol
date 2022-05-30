@@ -49,6 +49,7 @@ contract Lottery {
     event NoGivePrize(address indexed _player, uint256 _round);
     event GivePrize(address indexed _player, uint256 _round, Class indexed _class, uint256 indexed _tokenId);
     event CloseLottery();
+    event ChangeState(State indexed _state);
 
     modifier __isOperator() {
         require(__operator == msg.sender, "Operation unauthorized");
@@ -61,6 +62,7 @@ contract Lottery {
         round += 1;
         state = State.Buy;
         emit StartNewRound(startRoundBlockNumber, round);
+        emit ChangeState(state);
     }
 
     function buy(uint8[TOTAL_NUMBERS] memory numbers) external payable {
@@ -69,6 +71,7 @@ contract Lottery {
         bool canBuy = block.number - startRoundBlockNumber < duration;
         if(!canBuy) {
             state = State.Draw;
+            emit ChangeState(state);
         } else {
             address player = msg.sender;
             __players.push(player);
@@ -87,6 +90,7 @@ contract Lottery {
         }
         state = State.Prize;
         emit DrawNumbers();
+        emit ChangeState(state);
     }
 
     function givePrizes() external __isOperator() {
@@ -107,11 +111,12 @@ contract Lottery {
             } else {
                 emit NoGivePrize(_player, round);
             }
-            delete __players[i];
-            delete __tickets[i];
         }
+        delete __players;
+        delete __tickets;
         state = State.RoundFinished;
         payable(__operator).transfer(address(this).balance);
+        emit ChangeState(state);
     }
 
     function mint(string memory _uri) external __isOperator() {
@@ -128,6 +133,7 @@ contract Lottery {
                 payable(__players[i]).transfer(ticketPrice);
         state = State.Close;
         emit CloseLottery();
+        emit ChangeState(state);
     }
 
     function __random() private view returns(uint256) {

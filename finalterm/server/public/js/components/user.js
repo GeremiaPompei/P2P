@@ -130,6 +130,11 @@ export default {
           fromBlock: 0,
           toBlock: 'latest'
         }).on('data', e => this.allEvents.unshift(this.formatEvent(e)));
+        this.contracts.Lottery.contract.events.ChangeState({
+          fromBlock: 0,
+          toBlock: 'latest'
+        }).on('data', s => this.info.state = this.formatState(s.returnValues._state));
+        this.$emit("setLoading", false);
         this.$emit("setLoading", false);
       },
       async update() {
