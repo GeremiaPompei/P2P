@@ -28,80 +28,79 @@ contract ERC721 is IERC721, IERC721Metadata {
 
     modifier __isApprovedOrOwner(address _from, uint256 _tokenId) {
         require(_tokenId != 0, "Token does not exists");
-        address owner = this.ownerOf(_tokenId);
+        address owner = ownerOf(_tokenId);
         require(_from == owner, "Owner does not own the token");
         address spender = msg.sender;
-        require(spender == owner || __operatorApprovals[owner][spender] || this.getApproved(_tokenId) == spender, "Spender unauthorized");
+        require(spender == owner || __operatorApprovals[owner][spender] || getApproved(_tokenId) == spender, "Spender unauthorized");
         _;
     }
 
-    function balanceOf(address _owner) override virtual external view returns (uint256) {
+    function balanceOf(address _owner) override virtual public view returns (uint256) {
         require(_owner != address(0), "Invalid owner address");
         return __balances[_owner];
     }
 
-    function ownerOf(uint256 _tokenId) override virtual external view returns (address) {
+    function ownerOf(uint256 _tokenId) override virtual public view returns (address) {
         address owner = __owners[_tokenId];
         require(owner != address(0), "Token does not exists");
         return owner;
     }
 
-    function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes memory _data) override virtual external {
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes memory _data) override virtual public {
         __transferFrom(_from, _to, _tokenId);
         __checkContract(_from, _to, _tokenId, _data);
     }
 
-    function safeTransferFrom(address _from, address _to, uint256 _tokenId) override virtual external {
-        this.safeTransferFrom(_from, _to, _tokenId);
-
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId) override virtual public {
+        safeTransferFrom(_from, _to, _tokenId, "");
     }
 
-    function transferFrom(address _from, address _to, uint256 _tokenId) override virtual external {
+    function transferFrom(address _from, address _to, uint256 _tokenId) override virtual public {
         __transferFrom(_from, _to, _tokenId);
     }
 
-    function approve(address _approved, uint256 _tokenId) override virtual external {
+    function approve(address _approved, uint256 _tokenId) override virtual public {
         __tokenApprovals[_tokenId] = _approved;
         emit Approval(msg.sender, _approved, _tokenId);
     }
 
-    function setApprovalForAll(address _operator, bool _approved) override virtual external {
+    function setApprovalForAll(address _operator, bool _approved) override virtual public {
         __operatorApprovals[msg.sender][_operator] = _approved;
         emit ApprovalForAll(msg.sender, _operator, _approved);
     }
 
-    function getApproved(uint256 _tokenId) override virtual external view returns (address) {
+    function getApproved(uint256 _tokenId) override virtual public view returns (address) {
         return __tokenApprovals[_tokenId];
     }
 
-    function isApprovedForAll(address _owner, address _operator) override virtual external view returns (bool) {
+    function isApprovedForAll(address _owner, address _operator) override virtual public view returns (bool) {
        return __operatorApprovals[_owner][_operator];
     }
 
-    function name() override virtual external view returns (string memory _name) {
+    function name() override virtual public view returns (string memory _name) {
         _name = __name;
     }
     
-    function symbol() override virtual external view returns (string memory _symbol) {
+    function symbol() override virtual public view returns (string memory _symbol) {
         _symbol = __symbol;
     }
     
-    function tokenURI(uint256 _tokenId) override virtual external view returns (string memory) {
+    function tokenURI(uint256 _tokenId) override virtual public view returns (string memory) {
         require(__owners[_tokenId] != address(0), "Token does not exists");
         string memory baseURI = __baseURI;
-        return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, __tokens[_tokenId])) : "";
+        return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, __tokens[_tokenId])) : __tokens[_tokenId];
     }
 
-    function safeMint(address _to, string memory _uri, bytes memory _data) external returns(uint256 _tokenId) {
+    function safeMint(address _to, string memory _uri, bytes memory _data) public returns(uint256 _tokenId) {
         _tokenId = __mint(_to, _uri);
         __checkContract(address(0), _to, _tokenId, _data);
     }
 
-    function safeMint(address _to, string memory _uri) external returns(uint256 _tokenId) {
-        _tokenId = this.safeMint(_to, _uri);
+    function safeMint(address _to, string memory _uri) public returns(uint256 _tokenId) {
+        _tokenId = safeMint(_to, _uri, "");
     }
 
-    function mint(address _to, string memory _uri) external returns(uint256 _tokenId) {
+    function mint(address _to, string memory _uri) public returns(uint256 _tokenId) {
         _tokenId = __mint(_to, _uri);
     }
 

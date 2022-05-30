@@ -78,6 +78,11 @@ export default {
                   </div>
                   <div class="col">
                     <div class="row d-flex justify-content-md-center">
+                      <button @click="popupPrizes()" class="btn btn-primary m-2">Prizes</button>
+                    </div>
+                  </div>
+                  <div class="col">
+                    <div class="row d-flex justify-content-md-center">
                       <button @click="closeLottery()" class="btn btn-danger m-2">Close lottery</button>
                     </div>
                   </div>
@@ -117,7 +122,8 @@ export default {
           abiLottery: {},
           eventsLotteryCreated: [],
           allEvents: [],
-          info: {}
+          info: {},
+          prizes: []
         }
       },
       async created() {
@@ -146,6 +152,12 @@ export default {
             }
           );
         },
+        async initPrizes() {
+          this.prizes.splice(0);
+          for(let i = 0; i < 8; i++) {
+            await this.contractFetch("Lottery", "call", f => f.collectibles(i+1), (r) => this.prizes.push({collectible: r, class: (i+1)}));
+          }
+        },
         async loadLottery(e) {
           this.$emit("setLoading", true);
           const address = e._addressLottery;
@@ -158,6 +170,7 @@ export default {
           await this.contractFetch("Lottery", "call", f => f.round(), r => this.info.round = r);
           await this.contractFetch("Lottery", "call", f => f.startRoundBlockNumber(), r => this.info.startRoundBlockNumber = r);
           await this.contractFetch("Lottery", "call", f => f.ticketPrice(), r => this.info.ticketPrice = r);
+          await this.initPrizes();
           this.allEvents.splice(0);
           this.contracts.Lottery.contract.events.allEvents({
             fromBlock: 0,
@@ -185,7 +198,7 @@ export default {
           await this.contractFetch("Lottery", "send", f => f.closeLottery(), this.update);
         },
         async mint(data) {
-          await this.contractFetch("Lottery", "send", f => f.mint(data.uri), this.update);
+          await this.contractFetch("Lottery", "send", f => f.mint(data.uri, data.class), this.update);
         },
         popupNewLottery() {
           this.$emit(
@@ -231,12 +244,40 @@ export default {
                 type: "form",
                 title: "Mine new NFT",
                 structs: [
-                  [{type: 'text', title: 'URI', attribute: 'uri', value: ""}],
+                  [{type: 'select', attribute: 'class', options: [
+                    {label: 'Class 1', value: '1'},
+                    {label: 'Class 2', value: '2'},
+                    {label: 'Class 3', value: '3'},
+                    {label: 'Class 4', value: '4'},
+                    {label: 'Class 5', value: '5'},
+                    {label: 'Class 6', value: '6'},
+                    {label: 'Class 7', value: '7'},
+                    {label: 'Class 8', value: '8'},
+                  ]}],
+                  [{type: 'text', title: 'Url image', attribute: 'uri', value: ""}],
                 ],
                 submit_text: "Create",
                 done: async (data) => {
                   await this.mint(data);
                 },
+              }
+            ]
+          );
+        },
+        popupPrizes() {
+          this.prizes.sort((a, b) => a.class - b.class);
+          this.$emit(
+            'sendPopup', 
+            [
+              {
+                title: "Prizes",
+                type: "table",
+                fields: [
+                  {title: 'Class', type: 'text', value: 'class'},
+                  {title: 'Id', type: 'text', value: 'tokenId'},
+                  {title: 'NFT', type: 'img', value: 'uri'},
+                ],
+                data: this.prizes.filter(c => Number.parseInt(c.collectible.tokenId) > 0).map(c => {return {class: c.class, tokenId: c.collectible.tokenId, uri: c.collectible.uri};})
               }
             ]
           );

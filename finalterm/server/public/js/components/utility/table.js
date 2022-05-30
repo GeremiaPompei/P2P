@@ -16,6 +16,7 @@ export default {
                                 <td scope="col" v-for="(field, k) in fields" :key="k">
                                     <div v-if="field.type=='composed'">{{field.mapping(obj)}}</div>
                                     <a v-else-if="field.type=='url'" target="_blank" :href="obj[field.value]">{{obj.label}}</a>
+                                    <img v-else-if="field.type=='img'" :src="obj[field.value]" width="200" height="200">
                                     <div v-else-if="field.type=='text'">{{obj[field.value]}}</div>
                                     <div v-else-if="field.type=='date'">{{new Date(obj[field.value]).toLocaleDateString()}}</div>
                                     <div v-else-if="field.type=='button'" class="btn btn-success" 

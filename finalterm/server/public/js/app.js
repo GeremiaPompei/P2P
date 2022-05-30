@@ -147,8 +147,9 @@ const app = Vue.createApp({
             case "Buy": description = `Bought new ticket from address ${v._player}`; break;
             case "CloseLottery": description = `Lottery closed from operator`; break;
             case "NoGivePrize": description = `No prize won by ${v._player} in round ${v._round}`; break;
-            case "DrawNumbers": description = `Numbers drawn`; break;
+            case "DrawNumbers": description = `Numbers drawn are [${v._n1}, ${v._n2}, ${v._n3}, ${v._n4}, ${v._n5}] with powerball ${v._powerball}`; break;
             case "ChangeState": description = `Change state in ${this.formatState(v._state)}`; break;
+            case "GiveBack": description = `Give ${v._value} WEI back to ${v._player}`; break;
             case "GivePrize": 
               description = `NFT with token id ${v._tokenId} of class ${v._class} won by ${v._player} in round ${v._round}`; 
               if(this.address == v._player)
@@ -164,6 +165,18 @@ const app = Vue.createApp({
             case "2": return "Prize";
             case "3": return "RoundFinished";
             case "4": return "Close";
+          }
+        },
+        formatClass(c) {
+          switch(c) {
+            case "1": return "Class_1";
+            case "2": return "Class_2";
+            case "3": return "Class_3";
+            case "4": return "Class_4";
+            case "5": return "Class_5";
+            case "6": return "Class_6";
+            case "7": return "Class_7";
+            case "8": return "Class_8";
           }
         }
     }

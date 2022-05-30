@@ -58,6 +58,16 @@ export default {
                     <button @click="popupBuy()" class="btn btn-primary m-2">Buy</button>
                   </div>
                 </div>
+                <div class="col">
+                  <div class="row d-flex justify-content-md-center">
+                    <button @click="popupPrizes()" class="btn btn-primary m-2">Prizes</button>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="row d-flex justify-content-md-center">
+                    <button @click="popupPrizesWon()" class="btn btn-primary m-2">Prizes won</button>
+                  </div>
+                </div>
               </div>
             </div>
             <div v-else class="row d-flex justify-content-md-center">
@@ -95,6 +105,8 @@ export default {
         eventsLotteryCreated: [],
         allEvents: [],
         info: {},
+        prizes: [],
+        prizesWon: []
       }
     },
     async created() {
@@ -113,6 +125,12 @@ export default {
           this.$emit("notify", true, "New lottery available", e.returnValues._addressLottery);
         });
       },
+      async initPrizes() {
+        this.prizes.splice(0);
+        for(let i = 0; i < 8; i++) {
+          await this.contractFetch("Lottery", "call", f => f.collectibles(i+1), (r) => this.prizes.push({collectible: r, class: (i+1)}));
+        }
+      },
       async loadLottery(e) {
         this.$emit("setLoading", true);
         const address = e._addressLottery;
@@ -125,7 +143,9 @@ export default {
         await this.contractFetch("Lottery", "call", f => f.round(), r => this.info.round = r);
         await this.contractFetch("Lottery", "call", f => f.startRoundBlockNumber(), r => this.info.startRoundBlockNumber = r);
         await this.contractFetch("Lottery", "call", f => f.ticketPrice(), r => this.info.ticketPrice = r);
+        await this.initPrizes();
         this.allEvents.splice(0);
+        this.prizesWon.splice(0);
         this.contracts.Lottery.contract.events.allEvents({
           fromBlock: 0,
           toBlock: 'latest'
@@ -134,7 +154,19 @@ export default {
           fromBlock: 0,
           toBlock: 'latest'
         }).on('data', s => this.info.state = this.formatState(s.returnValues._state));
-        this.$emit("setLoading", false);
+        this.contracts.Lottery.contract.events.StartNewRound({
+          fromBlock: 0,
+          toBlock: 'latest'
+        }).on('data', s => this.$emit("notify", true, `Start round ${s.returnValues._round}`));
+        this.contracts.Lottery.contract.events.GivePrize({
+          fromBlock: 0,
+          toBlock: 'latest'
+        }).on('data', s => {
+          if(s.returnValues._player.toUpperCase() == this.address.toUpperCase()) {
+            this.prizesWon.unshift(s.returnValues);
+            this.$emit("notify", true, `You won round ${s.returnValues._round}`, `You received NFT ${s.returnValues._tokenId} of class ${s.returnValues._class}`);
+          }
+          });
         this.$emit("setLoading", false);
       },
       async update() {
@@ -177,10 +209,50 @@ export default {
                 {type: 'number', title: 'N5', attribute: 'n5', value: "", min: 1, max: 69},
                 {type: 'number', title: 'Powerball', attribute: 'powerball', value: "", min: 1, max: 26},
               ]],
-              submit_text: "Create",
+              submit_text: "Play",
               done: async (data) => {
                 await this.buy(data);
               },
+            }
+          ]
+        );
+      },
+      popupPrizes() {
+        this.prizes.sort((a, b) => a.class - b.class);
+        this.$emit(
+          'sendPopup', 
+          [
+            {
+              title: "Prizes",
+              type: "table",
+              fields: [
+                {title: 'Class', type: 'text', value: 'class'},
+                {title: 'Id', type: 'text', value: 'tokenId'},
+                {title: 'Image', type: 'img', value: 'uri'},
+              ],
+              data: this.prizes.filter(c => Number.parseInt(c.collectible.tokenId) > 0).map(c => {return {class: c.class, tokenId: c.collectible.tokenId, uri: c.collectible.uri};})
+            }
+          ]
+        );
+      },
+      async popupPrizesWon() {
+        for(const p of this.prizesWon) {
+          await this.contractFetch("ERC721", "call", f => f.tokenURI(p._tokenId), r => p.uri = r);
+        }
+        this.prizesWon.sort((a, b) => b._round - a._round);
+        this.$emit(
+          'sendPopup', 
+          [
+            {
+              title: "Prizes won",
+              type: "table",
+              fields: [
+                {title: 'Round', type: 'text', value: '_round'},
+                {title: 'Class', type: 'text', value: '_class'},
+                {title: 'Id', type: 'text', value: '_tokenId'},
+                {title: 'Image', type: 'img', value: 'uri'},
+              ],
+              data: this.prizesWon
             }
           ]
         );

@@ -30,7 +30,7 @@ contract Lottery {
     uint8[TOTAL_NUMBERS] private __winningNumbers;
     address[] private __players;
     uint8[TOTAL_NUMBERS][] private __tickets;
-    Collectible[] private __collectibles;
+    mapping(Class => Collectible) public collectibles;
 
     constructor(address _erc721Address, uint8 _duration, uint16 _k, uint256 _ticketPrice) {
         __operator = tx.origin;
@@ -43,20 +43,21 @@ contract Lottery {
         emit StartNewRound(startRoundBlockNumber, round);
     }
 
-    event StartNewRound(uint256 indexed _blockNumber, uint256 _round);
-    event Buy(address indexed _player);
-    event DrawNumbers();
-    event NoGivePrize(address indexed _player, uint256 _round);
-    event GivePrize(address indexed _player, uint256 _round, Class indexed _class, uint256 indexed _tokenId);
+    event StartNewRound(uint256 _blockNumber, uint256 _round);
+    event Buy(address _player);
+    event DrawNumbers(uint8 _n1, uint8 _n2, uint8 _n3, uint8 _n4, uint8 _n5, uint8 _powerball);
+    event NoGivePrize(address _player, uint256 _round);
+    event GivePrize(address _player, uint256 _round, Class _class, uint256 _tokenId);
+    event GiveBack(address _player, uint256 _value);
     event CloseLottery();
-    event ChangeState(State indexed _state);
+    event ChangeState(State _state);
 
     modifier __isOperator() {
         require(__operator == msg.sender, "Operation unauthorized");
         _;
     }
 
-    function startNewRound() external {
+    function startNewRound() public {
         require(state == State.RoundFinished, "Round is not finished");
         startRoundBlockNumber = block.number;
         round += 1;
@@ -65,7 +66,7 @@ contract Lottery {
         emit ChangeState(state);
     }
 
-    function buy(uint8[TOTAL_NUMBERS] memory numbers) external payable {
+    function buy(uint8[TOTAL_NUMBERS] memory numbers) public payable {
         require(state == State.Buy, "You cannot buy now");
         require(msg.value >= ticketPrice, "Not enough ether");
         bool canBuy = block.number - startRoundBlockNumber < duration;
@@ -81,7 +82,7 @@ contract Lottery {
         }
     }
 
-    function drawNumbers() external __isOperator() {
+    function drawNumbers() public __isOperator() {
         require(state == State.Draw, "You cannot draw now");
         uint256 number = __random();
         for(uint8 i = 0; i < TOTAL_NUMBERS; i++) {
@@ -89,17 +90,17 @@ contract Lottery {
             number /= 100;
         }
         state = State.Prize;
-        emit DrawNumbers();
+        emit DrawNumbers(__winningNumbers[0], __winningNumbers[1], __winningNumbers[2], __winningNumbers[3], __winningNumbers[4], __winningNumbers[5]);
         emit ChangeState(state);
     }
 
-    function givePrizes() external __isOperator() {
+    function givePrizes() public __isOperator() {
         require(state == State.Prize, "You cannot give prizes now");
         for(uint8 i = 0; i < __players.length; i++) {
             Class class = __matchClass(__tickets[i]);
             address _player = __players[i];
             if(class != Class.None) {
-                Collectible storage _collectible = __collectibles[i];
+                Collectible storage _collectible = collectibles[class];
                 require(_collectible.tokenId > 0, "Not enough prizes");
                 if(_collectible.available){
                     ERC721(erc721Address).safeTransferFrom(address(this), _player, _collectible.tokenId);
@@ -119,18 +120,19 @@ contract Lottery {
         emit ChangeState(state);
     }
 
-    function mint(string memory _uri) external __isOperator() {
+    function mint(string memory _uri, Class _class) public __isOperator() {
         uint256 _tokenId = ERC721(erc721Address).mint(address(this), _uri);
-        if(__collectibles.length + 1 > uint8(Class.Class_8))
-            __collectibles.pop();
-        __collectibles.push(Collectible(_tokenId, _uri, true));
+        collectibles[_class] = Collectible(_tokenId, _uri, true);
     }
 
-    function closeLottery() external __isOperator() {
+    function closeLottery() public __isOperator() {
         require(state != State.Close, "Lottery already closed");
-        if(state != State.RoundFinished) 
-            for(uint8 i = 0; i < __players.length; i++) 
+        if(state != State.RoundFinished) {
+            for(uint8 i = 0; i < __players.length; i++) {
                 payable(__players[i]).transfer(ticketPrice);
+                emit GiveBack(__players[i], ticketPrice);
+            }
+        }
         state = State.Close;
         emit CloseLottery();
         emit ChangeState(state);
