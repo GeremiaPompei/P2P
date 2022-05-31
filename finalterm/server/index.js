@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
+
 const PORT = process.env.PORT || 3000;
 
 const dirBuiltContracts = "../smart_contract/build/contracts/";
@@ -36,4 +37,10 @@ app.get("/api/contract_addresses", (req, res) => res.send({
     TRY: require(dirBuiltContracts + "TRY.json").networks[5777].address
 }));
 
+app.get("/api/web3storage_jwt", (req, res) => {
+    res.send({jwt: process.env.WEB3STORAGE_JWT});
+});
+
 app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
+
+

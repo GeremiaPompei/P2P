@@ -29,6 +29,7 @@ export default {
 
               <textarea v-else-if="struct.type=='textarea'" :type="struct.type" class="form-control" :id="struct.attribute" v-model="data[struct.attribute]"></textarea>
               <label v-else-if="struct.type=='label'" :type="struct.type" class="form-control" :id="struct.attribute">{{struct.label}}</label>
+              <input v-else-if="struct.type=='file'" :type="struct.type" class="form-control" :id="struct.attribute" @change="e => processFile(e, struct)">
               <input v-else :type="struct.type" class="form-control" :id="struct.attribute" v-model="data[struct.attribute]">
             </div>
           </div>
@@ -81,6 +82,10 @@ export default {
       Object.keys(this.data).forEach((k) => delete this.data[k]);
       this.init();
       await this.done(toExport);
+    },
+    processFile(e, struct) {
+      const files = e.target.files || e.dataTransfer.files;
+      this.data[struct.attribute] = files[0];
     },
   },
 };
