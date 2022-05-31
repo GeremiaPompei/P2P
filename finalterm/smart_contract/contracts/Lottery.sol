@@ -86,7 +86,7 @@ contract Lottery {
         require(state == State.Draw, "You cannot draw now");
         uint256 number = __random();
         for(uint8 i = 0; i < TOTAL_NUMBERS; i++) {
-            __winningNumbers[i] = 1;//uint8(number) % RANGES[i][1] + RANGES[i][0];
+            __winningNumbers[i] = uint8(number) % RANGES[i][1] + RANGES[i][0];
             __checkEqualNumbers(i);
             number /= 100;
         }
