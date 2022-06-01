@@ -124,7 +124,7 @@ const app = Vue.createApp({
                     const res = await prevFunc.call();
                     await callback(res);
                 } else if(type = "send") {
-                    const trx = await prevFunc.send({from: this.address, gas: 3000000, value});
+                    const trx = await prevFunc.send({from: this.address, gas: 5000000, value});
                     if(callback)
                         await callback(trx);
                     this.$emit("notify", true, "[Success]", trx.transactionHash);

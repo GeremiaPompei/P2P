@@ -91,17 +91,18 @@ contract ERC721 is IERC721, IERC721Metadata {
         return bytes(baseURI).length > 0 ? string(abi.encodePacked(baseURI, __tokens[_tokenId])) : __tokens[_tokenId];
     }
 
-    function safeMint(address _to, string memory _uri, bytes memory _data) public returns(uint256 _tokenId) {
-        _tokenId = __mint(_to, _uri);
+    function safeMint(address _to, string memory _uri, bytes memory _data) public returns(uint256) {
+        uint256 _tokenId = __mint(_to, _uri);
         __checkContract(address(0), _to, _tokenId, _data);
+        return _tokenId;
     }
 
-    function safeMint(address _to, string memory _uri) public returns(uint256 _tokenId) {
-        _tokenId = safeMint(_to, _uri, "");
+    function safeMint(address _to, string memory _uri) public returns(uint256) {
+        return safeMint(_to, _uri, "");
     }
 
-    function mint(address _to, string memory _uri) public returns(uint256 _tokenId) {
-        _tokenId = __mint(_to, _uri);
+    function mint(address _to, string memory _uri) public returns(uint256) {
+        return __mint(_to, _uri);
     }
 
     function __checkContract(address _from, address _to, uint256 _tokenId, bytes memory _data) private {

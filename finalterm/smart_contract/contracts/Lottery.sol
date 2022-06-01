@@ -2,8 +2,9 @@
 pragma solidity ^0.8.0;
 
 import './ERC721.sol';
+import './IERC721TokenReceiver.sol';
 
-contract Lottery {
+contract Lottery is IERC721TokenReceiver {
 
     enum Class {None, Class_1, Class_2, Class_3, Class_4, Class_5, Class_6, Class_7, Class_8}
     enum State {Buy, Draw, Prize, RoundFinished, Close}
@@ -53,8 +54,12 @@ contract Lottery {
     event ChangeState(State _state);
 
     modifier __isOperator() {
-        require(__operator == msg.sender, "Operation unauthorized");
+        require(__operator == tx.origin, "Operation unauthorized");
         _;
+    }
+
+    function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes memory _data) virtual override  external returns(bytes4) {
+        return this.onERC721Received.selector;
     }
 
     function startNewRound() public {
@@ -74,7 +79,7 @@ contract Lottery {
             state = State.Draw;
             emit ChangeState(state);
         } else {
-            address player = msg.sender;
+            address player = tx.origin;
             __players.push(player);
             __tickets.push(numbers);
             payable(player).transfer(msg.value - ticketPrice);
@@ -107,7 +112,7 @@ contract Lottery {
                     ERC721(erc721Address).safeTransferFrom(address(this), _player, _collectible.tokenId);
                     _collectible.available = false;
                 } else {
-                    ERC721(erc721Address).mint(_player, _collectible.uri);
+                    ERC721(erc721Address).safeMint(_player, _collectible.uri);
                 }
                 emit GivePrize(_player, round, class, _collectible.tokenId);
             } else {
@@ -122,7 +127,7 @@ contract Lottery {
     }
 
     function mint(string memory _uri, Class _class) public __isOperator() {
-        uint256 _tokenId = ERC721(erc721Address).mint(address(this), _uri);
+        uint256 _tokenId = ERC721(erc721Address).safeMint(address(this), _uri);
         collectibles[_class] = Collectible(_tokenId, _uri, true);
     }
 
