@@ -4,6 +4,8 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 
+const config = require("./blockchain_config.json")[process.argv.length > 2 ? process.argv[2] : "GANACHE_LOCAL"];
+
 const dirBuiltContracts = "../smart_contract/build/contracts/";
 const fs = require("fs");
 fs.writeFileSync(
@@ -32,13 +34,19 @@ fs.writeFileSync(
     "/node_modules/web3",
 ].map(fn => app.use(express.static(__dirname + fn)));
 
-app.get("/api/contract_addresses", (req, res) => res.send({
-    ERC721: require(dirBuiltContracts + "ERC721.json").networks[5777].address,
-    TRY: require(dirBuiltContracts + "TRY.json").networks[5777].address
-}));
+app.get("/api/contract_addresses", (req, res) => {
+    res.send({
+        ERC721: require(dirBuiltContracts + "ERC721.json").networks[config.PORT].address,
+        TRY: require(dirBuiltContracts + "TRY.json").networks[config.PORT].address
+    });
+});
 
 app.get("/api/web3storage_jwt", (req, res) => {
-    res.send({jwt: process.env.WEB3STORAGE_JWT});
+    res.send({ jwt: process.env.WEB3STORAGE_JWT });
+});
+
+app.get("/api/endpoint", (req, res) => {
+    res.send(config.ENDPOINT);
 });
 
 app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));

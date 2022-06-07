@@ -146,8 +146,8 @@ export default {
       await this.contractFetch(
         "TRY", "send",
         f => f.createLottery(data.duration, data.k, data.ticketPrice),
-        trx => {
-          this.loadLottery(trx.events.LotteryCreated.returnValues);
+        async trx => {
+          //this.loadLottery(trx.events.LotteryCreated.returnValues);
           this.newLottery = { duration: "", k: "", ticketPrice: "" };
         }
       );
