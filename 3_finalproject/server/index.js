@@ -36,8 +36,8 @@ fs.writeFileSync(
 
 app.get("/api/contract_addresses", (req, res) => {
     res.send({
-        ERC721: require(dirBuiltContracts + "ERC721.json").networks[config.PORT].address,
-        TRY: require(dirBuiltContracts + "TRY.json").networks[config.PORT].address
+        ERC721: require(dirBuiltContracts + "ERC721.json").networks[config.CHAIN_ID].address,
+        TRY: require(dirBuiltContracts + "TRY.json").networks[config.CHAIN_ID].address
     });
 });
 
