@@ -199,13 +199,23 @@ export default {
     },
     async mint(data) {
       this.$emit("setLoading", true);
-      const form = new FormData();
-      form.append('file', data.file);
       const jwt = (await (await (await fetch("/api/web3storage_jwt")).json())).jwt;
-      const res = await (await (await fetch('https://api.web3.storage/upload', {
-        method: 'POST', body: form, headers: { Authorization: "Bearer " + jwt }
-      })).json());
-      await this.contractFetch("Lottery", "send", f => f.mint(`https://${res.cid}.ipfs.dweb.link`, data.class), this.update);
+      const formImage = new FormData();
+      formImage.append('file', data.file);
+      const cidImage = (await (await fetch('https://api.web3.storage/upload', {
+        method: 'POST', body: formImage, headers: { Authorization: "Bearer " + jwt }
+      })).json()).cid;
+      const metadata = {
+        image: `https://${cidImage}.ipfs.dweb.link`,
+        name: `class_${data.class}`,
+        attributes: []
+      };
+      const formMetadata = new FormData();
+      formMetadata.append('file', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      const cidMetadata = (await (await fetch('https://api.web3.storage/upload', {
+        method: 'POST', body: formMetadata, headers: { Authorization: "Bearer " + jwt }
+      })).json()).cid;
+      await this.contractFetch("Lottery", "send", f => f.mint(`https://${cidMetadata}.ipfs.dweb.link`, data.class), this.update);
       this.$emit("setLoading", false);
     },
     popupNewLottery() {
@@ -274,8 +284,17 @@ export default {
         ]
       );
     },
-    popupPrizes() {
+    async popupPrizes() {
       this.prizes.sort((a, b) => a.class - b.class);
+      const data = [];
+      for (const c of this.prizes) {
+        if(Number.parseInt(c.collectible.tokenId) > 0) {
+          try {
+            const urlImage = (await (await fetch(c.collectible.uri)).json()).image;
+            data.push({ class: c.class, tokenId: c.collectible.tokenId, uri: urlImage, metadata: c.collectible.uri });
+          } catch(e) {}
+        }
+      }
       this.$emit(
         'sendPopup',
         [
@@ -286,8 +305,9 @@ export default {
               { title: 'Class', type: 'text', value: 'class' },
               { title: 'Id', type: 'text', value: 'tokenId' },
               { title: 'Image', type: 'img', value: 'uri' },
+              { title: 'Metadata', type: 'url', value: 'metadata', label: "link" },
             ],
-            data: this.prizes.filter(c => Number.parseInt(c.collectible.tokenId) > 0).map(c => { return { class: c.class, tokenId: c.collectible.tokenId, uri: c.collectible.uri }; })
+            data: data
           }
         ]
       );

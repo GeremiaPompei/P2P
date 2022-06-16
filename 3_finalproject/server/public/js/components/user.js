@@ -217,8 +217,17 @@ export default {
           ]
         );
       },
-      popupPrizes() {
+      async popupPrizes() {
         this.prizes.sort((a, b) => a.class - b.class);
+        const data = [];
+        for (const c of this.prizes) {
+          if(Number.parseInt(c.collectible.tokenId) > 0) {
+            try {
+              const urlImage = (await (await fetch(c.collectible.uri)).json()).image;
+              data.push({ class: c.class, tokenId: c.collectible.tokenId, uri: urlImage, metadata: c.collectible.uri });
+            } catch(e) {}
+          }
+        }
         this.$emit(
           'sendPopup', 
           [
@@ -229,8 +238,9 @@ export default {
                 {title: 'Class', type: 'text', value: 'class'},
                 {title: 'Id', type: 'text', value: 'tokenId'},
                 {title: 'Image', type: 'img', value: 'uri'},
+                { title: 'Metadata', type: 'url', value: 'metadata', label: "link" },
               ],
-              data: this.prizes.filter(c => Number.parseInt(c.collectible.tokenId) > 0).map(c => {return {class: c.class, tokenId: c.collectible.tokenId, uri: c.collectible.uri};})
+              data: data
             }
           ]
         );
@@ -240,6 +250,15 @@ export default {
           await this.contractFetch("ERC721", "call", f => f.tokenURI(p._tokenId), r => p.uri = r);
         }
         this.prizesWon.sort((a, b) => b._round - a._round);
+        const data = [];
+        for (const c of this.prizesWon) {
+          if(Number.parseInt(c._tokenId) > 0) {
+            try {
+              const urlImage = (await (await fetch(c.uri)).json()).image;
+              data.push({ round: c._round, class: c._class, tokenId: c._tokenId, uri: urlImage, metadata: c.uri });
+            } catch(e) {}
+          }
+        }
         this.$emit(
           'sendPopup', 
           [
@@ -247,12 +266,13 @@ export default {
               title: "Prizes won",
               type: "table",
               fields: [
-                {title: 'Round', type: 'text', value: '_round'},
-                {title: 'Class', type: 'text', value: '_class'},
-                {title: 'Id', type: 'text', value: '_tokenId'},
+                {title: 'Round', type: 'text', value: 'round'},
+                {title: 'Class', type: 'text', value: 'class'},
+                {title: 'Id', type: 'text', value: 'tokenId'},
                 {title: 'Image', type: 'img', value: 'uri'},
+                { title: 'Metadata', type: 'url', value: 'metadata', label: "link" },
               ],
-              data: this.prizesWon
+              data: data
             }
           ]
         );
